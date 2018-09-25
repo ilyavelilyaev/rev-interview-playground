@@ -7,7 +7,8 @@
 //
 
 import UIKit
-
+// Model
+//
 struct Wallet {
     static var shared = Wallet()
     var money = [Money]()
@@ -106,7 +107,7 @@ final class ScrollableStackView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         buildViewHierarchy()
-        setupConstaints()
+        setupConstraints()
         setupDefaults()
     }
 
@@ -131,9 +132,9 @@ final class ScrollableStackView: UIView {
         addSubview(scrollView)
     }
 
-    private func setupConstaints() {
+    private func setupConstraints() {
 
-        let scollViewConstaints = [
+        let scrollViewConstraints = [
             scrollView.topAnchor.constraint(equalTo: topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -141,32 +142,34 @@ final class ScrollableStackView: UIView {
             ]
 
         let guide = readableContentGuide
-        let stackViewConstaints = [
+        let stackViewConstraints = [
             stackView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
             ]
 
-        NSLayoutConstraint.activate(scollViewConstaints)
-        NSLayoutConstraint.activate(stackViewConstaints)
+        NSLayoutConstraint.activate(scrollViewConstraints)
+        NSLayoutConstraint.activate(stackViewConstraints)
     }
 
     private func setupDefaults() {
         backgroundColor = .white
     }
 
+    var dataTask: URLSessionDataTask?
+
     @objc private func buttonTouchedUpInside(_ sender: UIButton) {
         let url = URL(string: "https://revolut.duckdns.org/latest?base=EUR")!
-        let dataTask = URLSession.shared.dataTask(with: url) { [unowned self] (data, response, error) in
+        dataTask = URLSession.shared.dataTask(with: url) { [unowned self] (data, response, error) in
             Wallet.update(with: data!)
             self.reload()
         }
     }
 
     private func reload() {
-        self.label.text = Wallet.shared.money.reduce("", { prev, money in
-            return prev + "\(money.currency) : \(money.value)\n"
+        self.label.text = Wallet.shared.rates.reduce("", { prev, rate in
+            return prev + "\(rate.fromCurrency)->\(rate.toCurrency) : \(rate.value)\n"
         })
     }
 }
